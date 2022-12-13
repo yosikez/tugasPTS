@@ -1,0 +1,16 @@
+{
+    "name": "final-project/for-tech",
+    "description": "ForTech",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Yosi Kesuma",
+            "email": "yosikez@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "ForTech\\App\\": "App"
+        }
+    }
+}
