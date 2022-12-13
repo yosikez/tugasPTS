@@ -48,15 +48,6 @@ class AccountController
 
     public function setData()
     {
-        // $gambar = "gambar.png";
-        // $target_dir = "uploads/";
-        // $target_file = $target_dir . basename($gambar);
-        // $uploadOk = 1;
-        // $imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
-
-        // if (move_uploaded_file($gambar, $target_file)) {
-        //     echo "berhasil";
-        // }
         $data = [
             'about' => 'seorang manusia',
             'avatar' => null,
