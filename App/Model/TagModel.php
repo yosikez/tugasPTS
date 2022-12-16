@@ -14,6 +14,14 @@ class TagModel extends Database
         return $statement->fetchAll(\PDO::FETCH_OBJ);
     }
 
+    public function getDataByIdQuestions($id)
+    {
+        $statement = self::$conn->prepare("SELECT tags.name AS tags FROM tags JOIN question_tags ON tags.id = question_tags.tag_id WHERE question_tags.question_id = :id");
+        $statement->execute(['id' => $id]);
+
+        return $statement->fetchAll(\PDO::FETCH_OBJ);
+    }
+
     public function createTag($data)
     {
         $statement = self::$conn->prepare("INSERT INTO tags (name) VALUES (:name)");

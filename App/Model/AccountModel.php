@@ -14,7 +14,7 @@ class AccountModel extends Database
 
     public function setUserData($data)
     {
-        $statement = self::$conn->prepare("UPDATE account SET about=:about, avatar=:avatar, address=:address, job=:job, organization=:organization WHERE id=:id");
+        $statement = self::$conn->prepare("UPDATE account SET fullname=:fullname, username=:username, about=:about, avatar=:avatar, address=:address, job=:job, organization=:organization WHERE id=:id");
         return $statement->execute($data);
     }
 
@@ -24,6 +24,14 @@ class AccountModel extends Database
         $statement->execute();
 
         return $statement->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    public function getById($id)
+    {
+        $statement = self::$conn->prepare("SELECT * FROM account WHERE id=:id");
+        $statement->execute(['id' => $id]);
+
+        return $statement->fetch(\PDO::FETCH_OBJ);
     }
 
     public function getByUsername($username)

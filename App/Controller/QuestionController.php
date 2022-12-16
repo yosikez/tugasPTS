@@ -2,9 +2,12 @@
 
 namespace ForTech\App\Controller;
 
+use ForTech\App\Core\Router;
+use ForTech\App\Core\View;
 use ForTech\App\Model\CommentModel;
 use ForTech\App\Model\QuestionModel;
 use ForTech\App\Model\AnswerModel;
+use ForTech\App\Model\TagModel;
 
 
 
@@ -13,65 +16,105 @@ class QuestionController
     public static $question;
     public static $answer;
     public static $comment;
+    public static $tag;
+    public static $question_tags;
     public function __construct()
     {
         self::$question = new QuestionModel;
         self::$answer = new AnswerModel;
+        self::$tag = new TagModel;
         self::$comment = new CommentModel;
+
+    }
+
+    public function home()
+    {
+        View::render('Home/index');
     }
 
     public function index()
     {
         $data = self::$question->getAll();
-        var_dump($data);
+        View::render('Question/index', $data);
     }
 
     public function detail($id)
     {
-        $data = self::$question->getDetail($id);
-        $data2 = self::$answer->getByQuestionId($id);
-        $data3 = self::$comment->getCommentByQuestionId($id);
+        $data['question'] = self::$question->getDetail($id);
+        $data['answers'] = self::$answer->getByQuestionId($id);
+        $data['comment'] = self::$comment->getCommentByQuestionId($id);
+        $data['tag'] = self::$tag->getDataByIdQuestions($id);
+        View::render('Question/detail', $data);
 
-        var_dump($data);
-        var_dump($data2);
-        var_dump($data3);
-
-        for ($i = 0; $i < count($data3); $i++) {
-            var_dump(self::$comment->getReplyComment($data3[$i]->id));
-        }
     }
 
     public function createQuestion()
     {
+
+        if(!empty($_FILES['image'])){
+            $filename = md5($_FILES['image']['name']);
+            $tmpFilename = $_FILES['image']['tmp_name'];
+            $direktori = '../Storage/Questions/';
+            if(!move_uploaded_file($tmpFilename, $direktori . $filename)){
+                $filename = null;
+            };
+        } 
+            
+
+        $userId = $_SESSION['auth']->id;
         $question = [
-            'user_id' => 4,
-            'title' => 'Test Multi Tag?',
-            'descriptions' => 'Test Multi Tag dengan for',
-            'code' => null,
-            'image_question' => null,
+            'user_id' => $userId,   
+            'title' => $_POST['title'],
+            'descriptions' => $_POST['descriptions'],
+            'code' => $_POST['code'],
+            'image_question' => $filename,
         ];
 
-        $qtag = [1, 3];
+        $qtag = $_POST['tags'];
 
         if (self::$question->createQuestion($question, $qtag)) {
-            echo "success create question";
+            Router::redirect('forum');
         } else {
-            echo "failed create question";
+            Router::redirect('forum/create');
         }
     }
 
-    public function editQuestion($id)
+    public function createQuestionView()
     {
+        $data = self::$tag->getAll();
+        View::render('Question/addQuestion', $data);
+    }
+
+    public function editQuestionView($id){
+        $data['tags'] = self::$tag->getAll();
+        $data['question'] = self::$question->getDetail($id);
+        $data['question_tags'] = self::$question->getQuestionTags($id);
+        View::render('Question/edit', $data);
+    }
+
+    public function editQuestion()
+    {
+
+        if(!empty($_FILES['image'])){
+            $filename = md5($_FILES['image']['name']);
+            $tmpFilename = $_FILES['image']['tmp_name'];
+            $direktori = '../Storage/Questions/';
+            if(!move_uploaded_file($tmpFilename, $direktori . $filename)){
+                $filename = null;
+            };
+        } 
+        $id = $_POST['question_id'];
+        $qtag = @$_POST['tags'];
         $data = [
-            'title' => 'Cara agar bisa terbang?',
-            'descriptions' => 'Saya memiliki beberapa masalah pada saat akan makan jadinya takut mati',
-            'code' => 'whwhwhwhwwhw',
-            'image_question' => null
+            'title' => $_POST['title'],
+            'descriptions' => $_POST['descriptions'],
+            'code' => $_POST['code'],
+            'image_question' => $filename
         ];
-        if (self::$question->editQuestion($id, $data)) {
-            echo "success edit question";
+        if (self::$question->editQuestion($id, $data, $qtag)) {
+            Router::redirect("forum/detail/$id");
         } else {
-            echo "failed edit question";
+            Router::redirect("forum/edit-question/$id");
         }
 
     }
@@ -79,7 +122,7 @@ class QuestionController
     public function delete($id)
     {
         if (self::$question->delete($id)) {
-            echo "success delete";
+            Router::redirect('account');
         } else {
             echo "failed delete";
         }

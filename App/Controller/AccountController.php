@@ -2,67 +2,105 @@
 
 namespace ForTech\App\Controller;
 
+use ForTech\App\Core\Router;
+use ForTech\App\Core\View;
 use ForTech\App\Model\AccountModel;
+use ForTech\App\Model\QuestionModel;
+
 
 class AccountController
 {
     public static $account;
+    public static $question;
 
     public function __construct()
     {
         self::$account = new AccountModel;
+        self::$question = new QuestionModel;
     }
 
     public function index()
     {
-        $data = self::$account->getAll();
-        var_dump($data);
+        $data['user'] = self::$account->getByUsername($_SESSION['auth']->username);
+        $data['question'] = self::$question->getAllQuestionByIdUser($_SESSION['auth']->id);
+        View::render('Account/index', $data);
+    }
+
+    public function registerPage()
+    {
+        View::renderLogin('Auth/Register');
     }
 
     public function register()
     {
         $data = [
-            'fullname' => 'YoK',
-            'username' => 'yok',
-            'password' => password_hash('1234', PASSWORD_DEFAULT)
+            'fullname' => $_POST['fullname'],
+            'username' => $_POST['username'],
+            'password' => password_hash($_POST['password'], PASSWORD_DEFAULT)
         ];
         if (self::$account->register($data)) {
-            echo "berhasil register";
+            Router::redirect('/login');
         } else {
-            echo "gagal register";
+            Router::redirect('/register');
         }
+    }
+
+    public function loginPage()
+    {
+        View::renderLogin('Auth/Login');
     }
 
     public static function login()
     {
-        $user = self::$account->getByUsername('kzm');
-        if ($user && password_verify('124', $user->password)) {
+        $user = self::$account->getByUsername($_POST['username']);
+        if ($user && password_verify($_POST['password'], $user->password)) {
             $_SESSION['auth'] = $user;
-            var_dump($_SESSION['auth']);
+            Router::redirect('');
             return;
         } else {
-            echo "login failed";
+            Router::redirect('login');
         }
 
     }
 
     public function setData()
     {
+        if(!empty($_FILES['image'])){
+            $filename = md5($_FILES['image']['name']);
+            $tmpFilename = $_FILES['image']['tmp_name'];
+            $direktori = '../Storage/Profile/';
+            if(!move_uploaded_file($tmpFilename, $direktori . $filename)){
+                $filename = null;
+            };
+        } 
+
         $data = [
-            'about' => 'seorang manusia',
-            'avatar' => null,
-            'address' => 'karawang',
-            'job' => 'pelajar',
-            'organization' => 'technopark',
-            'id' => 1
+            'fullname'=> $_POST['fullname'],
+            'username'=> $_POST['username'],
+            'about' => $_POST['about'],
+            'avatar' => $filename,
+            'address' => $_POST['address'],
+            'job' => $_POST['job'],
+            'organization' => $_POST['organization'],
+            'id' => $_SESSION['auth']->id
         ];
-        var_dump(self::$account->setUserData($data));
+
+        if(self::$account->setUserData($data)){
+            $_SESSION['auth'] = self::$account->getByUsername($_POST['username']);
+            Router::redirect('account');
+        };
+
+    }
+    public function setDataView()
+    {
+        $data = self::$account->getById($_SESSION['auth']->id);
+        View::render('Account/edit', $data);
     }
 
     public static function logout()
     {
         session_destroy();
-        echo ("logout");
+        Router::redirect('');
     }
 }
 

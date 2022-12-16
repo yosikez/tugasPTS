@@ -7,7 +7,7 @@ class AnswerModel extends Database
 {
     public function getByQuestionId($id)
     {
-        $statement = self::$conn->prepare("SELECT * FROM answers WHERE question_id=:id");
+        $statement = self::$conn->prepare("SELECT answers.*, account.username AS answerName FROM answers JOIN account ON answers.user_id = account.id WHERE answers.question_id=:id");
         $statement->execute(['id' => $id]);
         return $statement->fetchAll(\PDO::FETCH_OBJ);
     }

@@ -2,6 +2,7 @@
 
 namespace ForTech\App\Controller;
 
+use ForTech\App\Core\Router;
 use ForTech\App\Model\AnswerModel;
 
 class AnswerController
@@ -14,14 +15,24 @@ class AnswerController
 
     public function createAnswer()
     {
+        if(!empty($_FILES['image'])){
+            $filename = md5($_FILES['image']['name']);
+            $tmpFilename = $_FILES['image']['tmp_name'];
+            $direktori = '../Storage/Answers/';
+            if(!move_uploaded_file($tmpFilename, $direktori . $filename)){
+                $filename = null;
+            };
+        } 
+            
+        $questionId = $_POST['question_id'];
         $data = [
-            'user_id' => 4,
-            'question_id' => 1,
-            'answer' => 'ini jawaban dari YoK',
-            'image_ans' => null,
+            'user_id' => $_POST['user_id'],
+            'question_id' => $questionId,
+            'answer' => $_POST['answer'],
+            'image_ans' => $filename,
         ];
         if (self::$answer->createAnswer($data)) {
-            echo "success create answers";
+            Router::redirect("forum/detail/$questionId");
         } else {
             echo "failed create answers";
         }

@@ -7,14 +7,14 @@ class CommentModel extends Database
 {
     public function getCommentByQuestionId($id)
     {
-        $statement = self::$conn->prepare("SELECT * FROM comments WHERE question_id=:id");
+        $statement = self::$conn->prepare("SELECT comments.*, account.username AS commentName FROM comments JOIN account ON comments.user_id = account.id WHERE question_id=:id");
         $statement->execute(['id' => $id]);
         return $statement->fetchAll(\PDO::FETCH_OBJ);
     }
 
     public function getReplyComment($id)
     {
-        $statement = self::$conn->prepare("SELECT * FROM comments WHERE comment_id=:id");
+        $statement = self::$conn->prepare("SELECT comments.*, account.username AS commentName FROM comments JOIN account ON comments.user_id = account.id WHERE comment_id=:id");
         $statement->execute(['id' => $id]);
         return $statement->fetchAll(\PDO::FETCH_OBJ);
     }

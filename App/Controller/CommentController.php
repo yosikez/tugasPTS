@@ -2,6 +2,8 @@
 
 namespace ForTech\App\Controller;
 
+use ForTech\App\Core\Router;
+use ForTech\App\Core\View;
 use ForTech\App\Model\CommentModel;
 
 class CommentController
@@ -12,15 +14,23 @@ class CommentController
         self::$comment = new CommentModel;
     }
 
+    public function dataComment()
+    {
+        $data['comment'] = self::$comment->getCommentByQuestionId(30);
+        View::render('Comment/Comment', $data);
+    }
+
     public function createComment()
     {
+        $questionId = $_POST['question_id'];
+
         $data = [
-            'question_id' => 1,
-            'user_id' => 4,
-            'comment' => 'INi komen Dari Yok',
+            'question_id' => $questionId,
+            'user_id' => $_POST['user_id'],
+            'comment' => $_POST['comment'],
         ];
         if (self::$comment->createComment($data)) {
-            echo "success create comment";
+            Router::redirect("forum/detail/$questionId");
         } else {
             echo "failed create comment";
         }
@@ -28,15 +38,18 @@ class CommentController
 
     public function replyComment()
     {
+        $questionId = $_POST['question_id'];
         $data = [
-            'comment_id' => 2,
-            'user_id' => 2,
-            'comment' => 'ini reply comment dari kesuma'
+            'comment_id' => $_POST['comment_id'],
+            'user_id' => $_POST['user_id'],
+            'comment' => $_POST['comment']
         ];
         if (self::$comment->replyComment($data)) {
-            echo "success create reply comment";
+            $msg = ['msg'=>'success'];
+            return json_encode($msg);
         } else {
-            echo "failed create reply comment";
+            $msg = ['msg'=>'error'];
+            return json_encode($msg);
         }
 
     }

@@ -2,6 +2,7 @@
 
 namespace ForTech\App\Controller;
 
+use ForTech\App\Core\View;
 use ForTech\App\Model\TagModel;
 
 class TagController
@@ -17,7 +18,7 @@ class TagController
     public function index()
     {
         $data = self::$tag->getAll();
-        var_dump($data);
+        View::render('Tags/index');
     }
 
     public function createTag()
